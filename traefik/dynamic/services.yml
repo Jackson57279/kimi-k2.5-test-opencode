@@ -1,0 +1,52 @@
+http:
+  routers:
+    api-router:
+      rule: "Host(`api.localhost`)"
+      service: api-service
+      entryPoints:
+        - web
+      middlewares:
+        - rate-limit
+        - compress
+    
+    api-router-secure:
+      rule: "Host(`api.localhost`)"
+      service: api-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+      middlewares:
+        - secure-headers
+        - rate-limit
+        - compress
+    
+    frontend-router:
+      rule: "Host(`app.localhost`)"
+      service: frontend-service
+      entryPoints:
+        - web
+      middlewares:
+        - compress
+    
+    frontend-router-secure:
+      rule: "Host(`app.localhost`)"
+      service: frontend-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+      middlewares:
+        - secure-headers
+        - compress
+
+  services:
+    api-service:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:8000"
+    
+    frontend-service:
+      loadBalancer:
+        servers:
+          - url: "http://host.docker.internal:3000"
